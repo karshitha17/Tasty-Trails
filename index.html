@@ -1,1 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🍴 Tasty Trails</title>
 
+  <style>
+    * {
+      margin: 0; padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    /* Fixed Header */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #111;
+      color: white;
+      text-align: center;
+      padding: 15px 0;
+      font-size: 40px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+      z-index: 1000;
+    }
+
+    body {
+      padding-top: 80px; 
+    }
+
+    h2{
+        text-align:center;
+        padding:20px;
+    }
+
+    /* SIDENAV */
+    .sidenav {
+      height: 100vh;
+      width: 0;
+      position: fixed;
+      z-index: 2;
+      top: 0;
+      left: 0;
+      background-color: #111;
+      overflow-x: hidden;
+      transition: 0.5s;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .sidenav button {
+      display: block;
+      padding: 12px 30px;
+      margin: 10px 0;
+      background-color: #222;
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      width: 70%;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    .sidenav button:hover {
+      background-color: crimson;
+      transform: scale(1.05);
+    }
+
+    .sidenav .closebtn {
+      position: absolute;
+      top: 15px;
+      right: 25px;
+      font-size: 36px;
+      background: none;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* Open Sidebar Button */
+    .open-btn {
+      position: fixed;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      font-size: 1.5rem;
+      background-color: black;
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 0 5px 5px 0;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 10000;
+    }
+
+    .open-btn:hover {
+      background-color: crimson;
+      left: 5px;
+    }
+
+    /* Overlay */
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4);
+      z-index: 1;
+    }
+
+    /* MENU GRID */
+    .menu-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      max-width: 1000px;
+      margin: auto;
+      padding-bottom: 30px;
+    }
+
+    .menu-item {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+
+    .menu-item:hover { transform: scale(1.05); }
+
+    .menu-item img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .menu-info { padding: 10px; }
+    .price { color: crimson; font-weight: bold; }
+
+    /* SLIDER */
+    .slideshow-container {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .slide {
+      display: none;
+      text-align: center;
+      color: white;
+    }
+
+    .slide.active {
+      display: block;
+      animation: zoomIn 0.5s ease;
+    }
+
+    @keyframes zoomIn {
+      from { transform: scale(0.95); opacity: 0.8; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .slide img {
+      max-width: 90%;
+      max-height: 80vh;
+      border-radius: 10px;
+      box-shadow: 0 0 25px rgba(255,255,255,0.5);
+    }
+
+    .details { margin-top: 20px; }
+
+    .details h3 {
+      margin-bottom: 5px;
+      font-size: 1.6rem;
+      color: #ffcccb;
+    }
+
+    .details p {
+      font-size: 1rem;
+      color: #f0f0f0;
+    }
+
+    .details .price {
+      color: yellow;
+      font-size: 1.2rem;
+    }
+
+    .close {
+      position: absolute;
+      top: 20px;
+      right: 40px;
+      color: white;
+      font-size: 30px;
+      cursor: pointer;
+      background: none;
+      border: none;
+    }
+
+    .prev, .next {
+      cursor: pointer;
+      position: absolute;
+      top: 50%;
+      padding: 16px;
+      color: white;
+      font-weight: bold;
+      font-size: 20px;
+      transition: 0.6s ease;
+      user-select: none;
+      background: none;
+      border: none;
+    }
+
+    .next { right: 0; }
+    .prev:hover, .next:hover { background-color: rgba(0,0,0,0.6); }
+
+    footer{
+      border:10px solid black;
+      background-color:black;
+      color:white;
+      text-align: center;
+    }
+    footer h3,footer p,footer h5{
+      padding:20px;
+    }
+
+    /* RESPONSIVE DESIGN */
+    @media (max-width: 768px) {
+      h1 { font-size: 1.8rem; }
+      .menu-item img { height: 180px; }
+      .details h3 { font-size: 1.4rem; }
+      .open-btn { font-size: 1.2rem; padding: 8px 12px; }
+    }
+
+    @media (max-width: 480px) {
+      .menu-item img { height: 150px; }
+      .details h3 { font-size: 1.2rem; }
+      .details p { font-size: 0.9rem; }
+      .sidenav button { font-size: 1rem; width: 80%; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>&#127869; Tasty Trails &#127869;</header>
+  <h2>&#127836; Menu</h2>
+  <!-- SIDENAV -->
+  <div id="mySidenav" class="sidenav">
+    <button class="closebtn" onclick="closeNav()">&times;</button>
+    <button onclick="filterMenu('all')">All</button>
+    <button onclick="filterMenu('pizza')">Pizza</button>
+    <button onclick="filterMenu('drinks')">Drinks</button>
+    <button onclick="filterMenu('dessert')">Dessert</button>
+  </div>
+
+  <div id="overlay" onclick="closeNav()"></div>
+
+  <button class="open-btn" onclick="openNav()">Click</button>
+
+  <!-- MENU ITEMS -->
+  <div class="menu-container" id="menu">
+    <div class="menu-item pizza">
+      <img src="download (2).jpeg" alt="Pizza" onclick="openSlider('pizza', 0)">
+      <div class="menu-info">
+        <h3>Margherita Pizza</h3>
+        <p>Classic cheese & tomato.</p>
+        <div class="price">$8.99</div>
+      </div>
+    </div>
+
+    <div class="menu-item pizza">
+      <img src="download (2).jpeg" alt="Pizza" onclick="openSlider('pizza', 1)">
+      <div class="menu-info">
+        <h3>Pepperoni Pizza</h3>
+        <p>Loaded with pepperoni & cheese.</p>
+        <div class="price">$9.99</div>
+      </div>
+    </div>
+
+    <div class="menu-item drinks">
+      <img src="download (2).jpeg" alt="Drink" onclick="openSlider('drinks', 0)">
+      <div class="menu-info">
+        <h3>Cold Coffee</h3>
+        <p>Chilled creamy coffee.</p>
+        <div class="price">$4.50</div>
+      </div>
+    </div>
+
+    <div class="menu-item drinks">
+      <img src="download (2).jpeg" alt="Drink" onclick="openSlider('drinks', 1)">
+      <div class="menu-info">
+        <h3>Fresh Lemonade</h3>
+        <p>Zesty and refreshing.</p>
+        <div class="price">$3.00</div>
+      </div>
+    </div>
+
+    <div class="menu-item dessert">
+      <img src="download (2).jpeg" alt="Dessert" onclick="openSlider('dessert', 0)">
+      <div class="menu-info">
+        <h3>Chocolate Cake</h3>
+        <p>Rich and moist chocolate treat.</p>
+        <div class="price">$5.99</div>
+      </div>
+    </div>
+
+    <div class="menu-item dessert">
+      <img src="download (2).jpeg" alt="Dessert" onclick="openSlider('dessert', 1)">
+      <div class="menu-info">
+        <h3>Ice Cream</h3>
+        <p>Vanilla & chocolate scoops.</p>
+        <div class="price">$3.99</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDER -->
+  <div class="slideshow-container" id="slider">
+    <button class="close" onclick="closeSlider()">×</button>
+    <button class="prev" onclick="changeSlide(-1)">❮</button>
+    <button class="next" onclick="changeSlide(1)">❯</button>
+    <div id="slide-images"></div>
+  </div>
+
+  <footer>
+     <div>
+      <h3>Contact</h3>
+      <p>Email: info@example.com</p>
+      <p>Phone: +91 1234567890</p>
+     </div>
+     <h5>&copy; 2025 MyWebsite</h5>
+  </footer>
+
+  <script>
+    // SIDENAV FUNCTIONS
+    function openNav() {
+      document.getElementById("mySidenav").style.width = "300px";
+      document.getElementById("overlay").style.display = "block";
+      document.querySelector(".open-btn").style.display = "none";
+    }
+
+    function closeNav() {
+      document.getElementById("mySidenav").style.width = "0";
+      document.getElementById("overlay").style.display = "none";
+      document.querySelector(".open-btn").style.display = "block";
+    }
+
+    // FILTER MENU
+    function filterMenu(category) {
+      const items = document.querySelectorAll('.menu-item');
+      const heading = document.querySelector('h1');
+
+      items.forEach(item => {
+        if (category === 'all' || item.classList.contains(category)) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+
+      if (category === 'all') heading.textContent = "🍴 Our Menu";
+      else if (category === 'pizza') heading.textContent = "🍕 Pizza";
+      else if (category === 'drinks') heading.textContent = "🥤 Drinks";
+      else if (category === 'dessert') heading.textContent = "🍰 Dessert";
+
+      closeNav();
+    }
+
+    // SLIDER LOGIC
+    let slideIndex = 0;
+    let currentSlides = [];
+
+    function openSlider(category, index) {
+      const selectedItems = document.querySelectorAll(`.menu-item.${category}`);
+      currentSlides = Array.from(selectedItems).map(item => ({
+        img: item.querySelector('img').src,
+        title: item.querySelector('h3').innerText,
+        desc: item.querySelector('p').innerText,
+        price: item.querySelector('.price').innerText
+      }));
+
+      const slideContainer = document.getElementById('slide-images');
+      slideContainer.innerHTML = '';
+
+      currentSlides.forEach(data => {
+        const slideDiv = document.createElement('div');
+        slideDiv.className = 'slide';
+        slideDiv.innerHTML = `
+          <img src="${data.img}">
+          <div class="details">
+            <h3>${data.title}</h3>
+            <p>${data.desc}</p>
+            <div class="price">${data.price}</div>
+          </div>
+        `;
+        slideContainer.appendChild(slideDiv);
+      });
+
+      document.getElementById('slider').style.display = 'flex';
+      slideIndex = index;
+      showSlide(slideIndex);
+    }
+
+    function closeSlider() {
+      document.getElementById('slider').style.display = 'none';
+    }
+
+    function changeSlide(n) {
+      showSlide(slideIndex += n);
+    }
+
+    function showSlide(n) {
+      const slides = document.querySelectorAll('.slide');
+      if (n >= slides.length) slideIndex = 0;
+      if (n < 0) slideIndex = slides.length - 1;
+      slides.forEach(s => s.classList.remove('active'));
+      slides[slideIndex].classList.add('active');
+    }
+
+    // Click outside slider to close
+    document.getElementById('slider').addEventListener('click', e => {
+      if (e.target.id === 'slider') closeSlider();
+    });
+
+    // Keyboard navigation
+    document.addEventListener('keydown', e => {
+      const slider = document.getElementById('slider');
+      if (slider.style.display === 'flex') {
+        if (e.key === 'ArrowRight') changeSlide(1);
+        if (e.key === 'ArrowLeft') changeSlide(-1);
+        if (e.key === 'Escape') closeSlider();
+      }
+    });
+  </script>
+</body>
+</html>
