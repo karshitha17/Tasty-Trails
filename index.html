@@ -140,8 +140,10 @@
 
     .menu-item img {
       width: 100%;
-      height: 200px;
-      object-fit: cover;
+      height: auto;         /* Box height adjusts to image height */
+      object-fit: fill;  /* Show full image without cutting */
+      background-color: #f8f8f8; /* Optional: fill empty space around image */
+      padding: 5px;
     }
 
     .menu-info { padding: 10px; }
@@ -221,7 +223,7 @@
     .prev, .next {
       cursor: pointer;
       position: absolute;
-      top: 50%;
+      bottom: 40px;
       padding: 16px;
       color: white;
       font-weight: bold;
@@ -232,7 +234,8 @@
       border: none;
     }
 
-    .next { right: 0; }
+    .prev { left: 30px; } 
+    .next { right: 30px; }  
     .prev:hover, .next:hover { background-color: rgba(0,0,0,0.6); }
 
     footer{
@@ -353,56 +356,91 @@
   </footer>
 
   <script>
-    // SIDENAV FUNCTIONS
-    function openNav() {
-      document.getElementById("mySidenav").style.width = "300px";
-      document.getElementById("overlay").style.display = "block";
-      document.querySelector(".open-btn").style.display = "none";
-    }
+  // SIDENAV FUNCTIONS
+  function openNav() {
+    document.getElementById("mySidenav").style.width = "300px";
+    document.getElementById("overlay").style.display = "block";
+    document.querySelector(".open-btn").style.display = "none";
+  }
 
-    function closeNav() {
-      document.getElementById("mySidenav").style.width = "0";
-      document.getElementById("overlay").style.display = "none";
-      document.querySelector(".open-btn").style.display = "block";
-    }
+  function closeNav() {
+    document.getElementById("mySidenav").style.width = "0";
+    document.getElementById("overlay").style.display = "none";
+    document.querySelector(".open-btn").style.display = "block";
+  }
 
-    // FILTER MENU
-    function filterMenu(category) {
-      const items = document.querySelectorAll('.menu-item');
-      const heading = document.querySelector('h1');
+  // FILTER MENU
+  let currentCategory = 'all'; // store the selected category
 
-      items.forEach(item => {
-        if (category === 'all' || item.classList.contains(category)) {
-          item.style.display = 'block';
-        } else {
-          item.style.display = 'none';
-        }
-      });
+  function filterMenu(category) {
+    const items = document.querySelectorAll('.menu-item');
+    const heading = document.querySelector('h2');
+    currentCategory = category; // store which category is active
 
-      if (category === 'all') heading.textContent = "🍴 Our Menu";
-      else if (category === 'pizza') heading.textContent = "🍕 Pizza";
-      else if (category === 'drinks') heading.textContent = "🥤 Drinks";
-      else if (category === 'dessert') heading.textContent = "🍰 Dessert";
+    items.forEach(item => {
+      if (category === 'all' || item.classList.contains(category)) {
+        item.style.display = 'block';
+      } else {
+        item.style.display = 'none';
+      }
+    });
 
-      closeNav();
-    }
+    if (category === 'all') heading.textContent = "🍴 Our Menu";
+    else if (category === 'pizza') heading.textContent = "🍕 Pizza";
+    else if (category === 'drinks') heading.textContent = "🥤 Drinks";
+    else if (category === 'dessert') heading.textContent = "🍰 Dessert";
 
-    // SLIDER LOGIC
-    let slideIndex = 0;
-    let currentSlides = [];
+    closeNav();
+  }
 
-    function openSlider(category, index) {
-      const selectedItems = document.querySelectorAll(`.menu-item.${category}`);
-      currentSlides = Array.from(selectedItems).map(item => ({
+  // SLIDER LOGIC
+  let slideIndex = 0;
+  let currentSlides = [];
+
+  function openSlider(category, index) {
+    // If the user clicked 'all' menu, show all categories in slider
+    const selector = currentCategory === 'all' ? '.menu-item' : `.menu-item.${category}`;
+    const selectedItems = document.querySelectorAll(selector);
+
+    currentSlides = Array.from(selectedItems).map(item => ({
+      img: item.querySelector('img').src,
+      title: item.querySelector('h3').innerText,
+      desc: item.querySelector('p').innerText,
+      price: item.querySelector('.price').innerText
+    }));
+
+    const slideContainer = document.getElementById('slide-images');
+    slideContainer.innerHTML = '';
+
+    currentSlides.forEach(data => {
+      const slideDiv = document.createElement('div');
+      slideDiv.className = 'slide';
+      slideDiv.innerHTML = `
+        <img src="${data.img}">
+        <div class="details">
+          <h3>${data.title}</h3>
+          <p>${data.desc}</p>
+          <div class="price">${data.price}</div>
+        </div>
+      `;
+      slideContainer.appendChild(slideDiv);
+    });
+
+    document.getElementById('slider').style.display = 'flex';
+
+    // If viewing 'all', find the correct index based on the clicked image
+    if (currentCategory === 'all') {
+      const allItems = Array.from(document.querySelectorAll('.menu-item'));
+      const clickedItem = event.target.closest('.menu-item');
+      index = allItems.indexOf(clickedItem);
+      currentSlides = allItems.map(item => ({
         img: item.querySelector('img').src,
         title: item.querySelector('h3').innerText,
         desc: item.querySelector('p').innerText,
         price: item.querySelector('.price').innerText
       }));
 
-      const slideContainer = document.getElementById('slide-images');
       slideContainer.innerHTML = '';
-
       currentSlides.forEach(data => {
         const slideDiv = document.createElement('div');
         slideDiv.className = 'slide';
@@ -416,42 +454,42 @@
         `;
         slideContainer.appendChild(slideDiv);
       });
-
-      document.getElementById('slider').style.display = 'flex';
-      slideIndex = index;
-      showSlide(slideIndex);
     }
 
-    function closeSlider() {
-      document.getElementById('slider').style.display = 'none';
+    slideIndex = index;
+    showSlide(slideIndex);
+  }
+
+  function closeSlider() {
+    document.getElementById('slider').style.display = 'none';
+  }
+
+  function changeSlide(n) {
+    showSlide(slideIndex += n);
+  }
+
+  function showSlide(n) {
+    const slides = document.querySelectorAll('.slide');
+    if (n >= slides.length) slideIndex = 0;
+    if (n < 0) slideIndex = slides.length - 1;
+    slides.forEach(s => s.classList.remove('active'));
+    slides[slideIndex].classList.add('active');
+  }
+
+  // Click outside slider to close
+  document.getElementById('slider').addEventListener('click', e => {
+    if (e.target.id === 'slider') closeSlider();
+  });
+
+  // Keyboard navigation
+  document.addEventListener('keydown', e => {
+    const slider = document.getElementById('slider');
+    if (slider.style.display === 'flex') {
+      if (e.key === 'ArrowRight') changeSlide(1);
+      if (e.key === 'ArrowLeft') changeSlide(-1);
+      if (e.key === 'Escape') closeSlider();
     }
-
-    function changeSlide(n) {
-      showSlide(slideIndex += n);
-    }
-
-    function showSlide(n) {
-      const slides = document.querySelectorAll('.slide');
-      if (n >= slides.length) slideIndex = 0;
-      if (n < 0) slideIndex = slides.length - 1;
-      slides.forEach(s => s.classList.remove('active'));
-      slides[slideIndex].classList.add('active');
-    }
-
-    // Click outside slider to close
-    document.getElementById('slider').addEventListener('click', e => {
-      if (e.target.id === 'slider') closeSlider();
-    });
-
-    // Keyboard navigation
-    document.addEventListener('keydown', e => {
-      const slider = document.getElementById('slider');
-      if (slider.style.display === 'flex') {
-        if (e.key === 'ArrowRight') changeSlide(1);
-        if (e.key === 'ArrowLeft') changeSlide(-1);
-        if (e.key === 'Escape') closeSlider();
-      }
-    });
-  </script>
+  });
+</script>
 </body>
 </html>
